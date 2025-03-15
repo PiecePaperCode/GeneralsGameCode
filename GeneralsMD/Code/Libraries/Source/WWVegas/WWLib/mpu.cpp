@@ -88,14 +88,12 @@ unsigned long Get_CPU_Clock(unsigned long & high)
 {
 	int h;
 	int l;
-    __asm__ __volatile__ (
-        "xorb %%al, %%al;"        // Clear AL register (equivalent to _emit 0Fh 31h for no-op)
-        "mov %%edx, %[h];"        // mov [h], edx
-        "mov %%eax, %[l];"        // mov [l], eax
-        : // No output operands
-        : [h] "m" (h), [l] "m" (l)  // Input operands
-        : "%eax", "%edx"  // Clobbered registers
-    );
+	__asm {
+		_emit 0Fh
+		_emit 31h
+		mov	[h],edx
+		mov	[l],eax
+	}
 	high = h;
 	return(l);
 }
@@ -128,16 +126,12 @@ static unsigned long TSC_High;
 
 void RDTSC(void)
 {
-    unsigned long long TSC_Low, TSC_High;
-
-    __asm__ (
-        "rdtsc\n"                          // Execute the RDTSC instruction
-        "movl %%eax, %[low]\n"             // Move the value of EAX to TSC_Low
-        "movl %%edx, %[high]\n"            // Move the value of EDX to TSC_High
-        : [low] "=m" (TSC_Low), [high] "=m" (TSC_High)  // Output operands
-        : // No input operands
-        : "eax", "edx"                     // Clobbered registers
-    );
+    _asm
+    {
+        ASM_RDTSC;
+        mov     TSC_Low, eax
+        mov     TSC_High, edx
+    }
 }
 
 
