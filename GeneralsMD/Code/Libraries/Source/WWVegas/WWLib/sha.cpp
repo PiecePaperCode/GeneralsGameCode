@@ -39,7 +39,11 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include	"sha.h"
-#include    <iostream>
+#ifdef USING_STLPORT
+#include	<iostream.h>
+#else
+#include	<iostream>
+#endif
 #include	<stdlib.h>
 
 
