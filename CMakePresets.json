@@ -20,6 +20,19 @@
             }
         },
         {
+            "name": "mingw64",
+            "displayName": "Cross Compile with MinGW-w64",
+            "description": "Builds the project using MinGW-w64 toolchain for Windows",
+            "generator": "Ninja",
+            "hidden": false,
+            "binaryDir": "${sourceDir}/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/mingw-w64-x86_64.cmake",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        },
+        {
             "name": "default",
             "displayName": "Default Config",
             "generator": "Ninja Multi-Config",
@@ -59,6 +72,13 @@
             "displayName": "Build Windows build",
             "description": "Build Windows build",
             "configuration": "Release"
+        },
+        {
+            "name": "mingw64-release",
+            "displayName": "Build Windows Release",
+            "description": "Builds the project using MinGW-w64 for Windows (Release Mode)",
+            "configurePreset": "mingw64",
+            "jobs": 8
         },
         {
             "name": "unix",
