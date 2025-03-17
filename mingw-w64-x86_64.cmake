@@ -17,8 +17,8 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
 # Compatibility settings for older MSVC versions
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_MSC_VER=1200")  # VC98 has _MSC_VER=1200
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_MSC_VER=1200")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_MSC_VER=1300")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_MSC_VER=1300")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")  # Disable RTTI to match VC98
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")  # Disable exceptions (VC98 default)
 
