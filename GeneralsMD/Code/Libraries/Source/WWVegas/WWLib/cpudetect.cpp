@@ -135,7 +135,11 @@ static unsigned Calculate_Processor_Speed(__int64& ticks_per_second)
 	} Time;
 
 #ifdef WIN32
-    #define ASM_RDTSC __asm__ volatile ("rdtsc" : "=a" (Time.timer0_l), "=d" (Time.timer0_h))
+   __asm {
+      ASM_RDTSC;
+      mov Time.timer0_h, eax
+      mov Time.timer0_l, edx
+   }
 #elif defined(_UNIX)
       __asm__("rdtsc");
       __asm__("mov %eax, __Time.timer1_h");
@@ -146,13 +150,15 @@ static unsigned Calculate_Processor_Speed(__int64& ticks_per_second)
 	unsigned elapsed;
 	while ((elapsed=TIMEGETTIME()-start)<200) {
 #ifdef WIN32
-	__asm__ ("rdtsc");
-	__asm__("mov %eax, __Time.timer1_h");
-	__asm__("mov %edx, __Time.timer1_l");
+      __asm {
+         ASM_RDTSC;
+         mov Time.timer1_h, eax
+         mov Time.timer1_l, edx
+      }
 #elif defined(_UNIX)
-    __asm__ ("rdtsc");
-    __asm__("mov %eax, __Time.timer1_h");
-    __asm__("mov %edx, __Time.timer1_l");
+      __asm__ ("rdtsc");
+      __asm__("mov %eax, __Time.timer1_h");
+      __asm__("mov %edx, __Time.timer1_l");
 #endif
 	}
 
@@ -1062,7 +1068,7 @@ void CPUDetectClass::Init_Processor_Log()
 	}
 
 	if (CPUDetectClass::Get_L1_Instruction_Trace_Cache_Size()) {
-		SYSLOG(("L1 Instruction Trace Cache: %d way set associative, %dk �OPs\r\n",
+		SYSLOG(("L1 Instruction Trace Cache: %d way set associative, %dk micro-OPs\r\n",
 			CPUDetectClass::Get_L1_Instruction_Cache_Set_Associative(),
 			CPUDetectClass::Get_L1_Instruction_Cache_Size()/1024));
 	}
