@@ -97,7 +97,7 @@ bool LaunchWebBrowser(const char* url)
 	// Delete temporary file
 	DeleteFile(filename);
 
-	if ((int)hInst <= 32)
+	if (reinterpret_cast<uintptr_t>(hInst) <= 32)
 		{
 		return false;
 		}

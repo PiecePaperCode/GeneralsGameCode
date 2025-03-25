@@ -20,7 +20,7 @@
 #include "win.h"
 #include "wwdebug.h"
 
-HINSTANCE	ProgramInstance;
+extern HINSTANCE	ProgramInstance;
 HWND			MainWindow;
 bool GameInFocus = false;
 

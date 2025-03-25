@@ -34,8 +34,8 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "registry.h"
-#include "rawfile.h"
-#include "ini.h"
+#include "RAWFILE.H"
+#include "INI.H"
 #include "inisup.h"
 #include <assert.h>
 #include <windows.h>
@@ -79,7 +79,7 @@ RegistryClass::RegistryClass( const char * sub_key, bool create ) :
 
 	if (ERROR_SUCCESS == result) {
 		IsValid = true;
-		Key = (int)key;
+	    Key = reinterpret_cast<uintptr_t>(key);
 	}
 }
 

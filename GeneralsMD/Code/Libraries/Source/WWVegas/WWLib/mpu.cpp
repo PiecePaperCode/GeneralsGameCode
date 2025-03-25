@@ -37,7 +37,7 @@
 
 #include	"always.h"
 #include	"win.h"
-#include	"mpu.h"
+#include	"MPU.H"
 #include "math.h"
 #include <assert.h>
 
@@ -88,12 +88,14 @@ unsigned long Get_CPU_Clock(unsigned long & high)
 {
 	int h;
 	int l;
-	__asm {
-		_emit 0Fh
-		_emit 31h
-		mov	[h],edx
-		mov	[l],eax
-	}
+    __asm__ __volatile__ (
+        "xorb %%al, %%al;"        // Clear AL register (equivalent to _emit 0Fh 31h for no-op)
+        "mov %%edx, %[h];"        // mov [h], edx
+        "mov %%eax, %[l];"        // mov [l], eax
+        : // No output operands
+        : [h] "m" (h), [l] "m" (l)  // Input operands
+        : "%eax", "%edx"  // Clobbered registers
+    );
 	high = h;
 	return(l);
 }
@@ -126,12 +128,16 @@ static unsigned long TSC_High;
 
 void RDTSC(void)
 {
-    _asm
-    {
-        ASM_RDTSC;
-        mov     TSC_Low, eax
-        mov     TSC_High, edx
-    }
+    unsigned long long TSC_Low, TSC_High;
+
+    __asm__ (
+        "rdtsc\n"                          // Execute the RDTSC instruction
+        "movl %%eax, %[low]\n"             // Move the value of EAX to TSC_Low
+        "movl %%edx, %[high]\n"            // Move the value of EDX to TSC_High
+        : [low] "=m" (TSC_Low), [high] "=m" (TSC_High)  // Output operands
+        : // No input operands
+        : "eax", "edx"                     // Clobbered registers
+    );
 }
 
 
@@ -186,48 +192,48 @@ int Get_RDTSC_CPU_Speed(void)
 		*/
 		QueryPerformanceCounter(&t0);
 
-		t1.LowPart = t0.LowPart;		// Set Initial time
-		t1.HighPart = t0.HighPart;
+		t1.u.LowPart = t0.u.LowPart;		// Set Initial time
+		t1.u.HighPart = t0.u.HighPart;
 
 		/*
 		** Loop until 50 ticks have passed since last read of hi-res counter.
 		** This accounts for overhead later.
 		*/
-		while ( (DWORD)t1.LowPart - (DWORD)t0.LowPart<50) {
+		while ( (DWORD)t1.u.LowPart - (DWORD)t0.u.LowPart<50) {
 			QueryPerformanceCounter(&t1);
 		}
 
-		ASM_RDTSC;
-		_asm	mov	stamp0, EAX
+		//ASM_RDTSC;
+	    __asm__ ("mov %0, %%eax" : : "r" (stamp0));
 
-		t0.LowPart = t1.LowPart;		// Reset Initial Time
-		t0.HighPart = t1.HighPart;
+		t0.u.LowPart = t1.u.LowPart;		// Reset Initial Time
+		t0.u.HighPart = t1.u.HighPart;
 
 		/*
 		** Loop until 1000 ticks have passed since last read of hi-res counter.
 		** This allows for elapsed time for sampling.
 		*/
-		while ( (DWORD)t1.LowPart - (DWORD)t0.LowPart < 1000 ) {
+		while ( (DWORD)t1.u.LowPart - (DWORD)t0.u.LowPart < 1000 ) {
 			QueryPerformanceCounter(&t1);
 		}
 
-		ASM_RDTSC;
-		_asm	mov	stamp1, EAX
+		//ASM_RDTSC;
+	    __asm__ ("mov %0, %%eax" : : "r" (stamp1));
 
 
 		cycles = stamp1 - stamp0;					// # of cycles passed between reads
 
-		double bigticks = (double)((DWORD)t1.LowPart - (DWORD)t0.LowPart);
+		double bigticks = (double)((DWORD)t1.u.LowPart - (DWORD)t0.u.LowPart);
 		assert((bigticks * 100000.0) > bigticks);
 		bigticks = bigticks * 100000.0;						// Convert ticks to hundred
 															//   thousandths of a tick
-		ticks = (DWORD)(bigticks / (double)(count_freq.LowPart / 10));
+		ticks = (DWORD)(bigticks / (double)(count_freq.u.LowPart / 10));
 															// Hundred Thousandths of a
 															//   Ticks / ( 10 ticks/second )
 															//   = microseconds (us)
 		total_ticks += ticks;
 		total_cycles += cycles;
-		if ( (ticks % count_freq.LowPart) > (count_freq.LowPart/2) ) ticks++;		// Round up if necessary
+		if ( (ticks % count_freq.u.LowPart) > (count_freq.u.LowPart/2) ) ticks++;		// Round up if necessary
 
 		freq = cycles/ticks;							// MHz = cycles / us
 
@@ -235,7 +241,7 @@ int Get_RDTSC_CPU_Speed(void)
 
 		total = ( freq + freq2 + freq3 );		// Total last three frequency calcs
 
-	} while ( (tries < 3 ) || (tries < 20) && ((abs(3 * freq -total) > 3*TOLERANCE )|| (abs(3 * freq2-total) > 3*TOLERANCE )|| (abs(3 * freq3-total) > 3*TOLERANCE )));
+	} while ( (tries < 3 ) || (tries < 20) && ((std::fabs(3 * freq -total) > 3*TOLERANCE )|| (std::fabs(3 * freq2-total) > 3*TOLERANCE )|| (std::fabs(3 * freq3-total) > 3*TOLERANCE )));
 
 	SetThreadPriority(thread, threadPri);
 	SetPriorityClass(process, processPri);

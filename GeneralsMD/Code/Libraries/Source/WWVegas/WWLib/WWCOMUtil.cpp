@@ -55,8 +55,8 @@
 STDMETHODIMP Dispatch_GetProperty(IDispatch* object, const OLECHAR* propName,
 		VARIANT* result)
 	{
-	result->vt = VT_EMPTY;
-	result->lVal = 0;
+	result->n1.n2.vt = VT_EMPTY;
+	result->n1.n2.n3.lVal = 0;
 
 	// Get the dispid for the named property
 	OLECHAR* member = const_cast<OLECHAR*>(propName);

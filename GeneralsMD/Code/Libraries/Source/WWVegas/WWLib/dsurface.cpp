@@ -139,7 +139,7 @@ DSurface::DSurface(int width, int height, bool system_memory, DDPIXELFORMAT *pix
 			memset(Description, '\0', sizeof(DDSURFACEDESC));
 			Description->dwSize = sizeof(DDSURFACEDESC);
 			SurfacePtr->GetSurfaceDesc(Description);
-			BytesPerPixel = (Description->ddpfPixelFormat.dwRGBBitCount+7)/8;
+			BytesPerPixel = (Description->ddpfPixelFormat.u1.dwRGBBitCount+7)/8;
 			IsVideoRam = ((Description->ddsCaps.dwCaps & DDSCAPS_VIDEOMEMORY) != 0);
 
 
@@ -149,7 +149,7 @@ DSurface::DSurface(int width, int height, bool system_memory, DDPIXELFORMAT *pix
 			*/
 			if (BytesPerPixel == 2) {
 				int index;
-				int shift = Description->ddpfPixelFormat.dwRBitMask;
+				int shift = Description->ddpfPixelFormat.u2.dwRBitMask;
 				ThisRedRight = 0;
 				ThisRedLeft = 0;
 				for (index = 0; index < 16; index++) {
@@ -163,7 +163,7 @@ DSurface::DSurface(int width, int height, bool system_memory, DDPIXELFORMAT *pix
 					ThisRedLeft++;
 				}
 
-				shift = Description->ddpfPixelFormat.dwGBitMask;
+				shift = Description->ddpfPixelFormat.u3.dwGBitMask;
 				ThisGreenRight = 0;
 				ThisGreenLeft = 0;
 				for (index = 0; index < 16; index++) {
@@ -177,7 +177,7 @@ DSurface::DSurface(int width, int height, bool system_memory, DDPIXELFORMAT *pix
 					shift <<= 1;
 				}
 
-				shift = Description->ddpfPixelFormat.dwBBitMask;
+				shift = Description->ddpfPixelFormat.u4.dwBBitMask;
 				ThisBlueRight = 0;
 				ThisBlueLeft = 0;
 				for (index = 0; index < 16; index++) {
@@ -410,7 +410,7 @@ DSurface * DSurface::Create_Primary(DSurface ** backsurface1)
 		memset(surface->Description, '\0', sizeof(DDSURFACEDESC));
 		surface->Description->dwSize = sizeof(DDSURFACEDESC);
 		surface->SurfacePtr->GetSurfaceDesc(surface->Description);
-		surface->BytesPerPixel = (surface->Description->ddpfPixelFormat.dwRGBBitCount+7)/8;
+		surface->BytesPerPixel = (surface->Description->ddpfPixelFormat.u1.dwRGBBitCount+7)/8;
 		surface->IsPrimary = true;
 
 //		surface->Window.Set(Rect(0, 0, surface->Description->dwWidth, surface->Description->dwHeight));
@@ -442,7 +442,7 @@ DSurface * DSurface::Create_Primary(DSurface ** backsurface1)
 		*/
 		if (surface->Bytes_Per_Pixel() == 2) {
 			int index;
-			int shift = PixelFormat.dwRBitMask;
+			int shift = PixelFormat.u2.dwRBitMask;
 			RedRight = 0;
 			RedLeft = 0;
 			for (index = 0; index < 16; index++) {
@@ -456,7 +456,7 @@ DSurface * DSurface::Create_Primary(DSurface ** backsurface1)
 				RedLeft++;
 			}
 
-			shift = PixelFormat.dwGBitMask;
+			shift = PixelFormat.u3.dwGBitMask;
 			GreenRight = 0;
 			GreenLeft = 0;
 			for (index = 0; index < 16; index++) {
@@ -470,7 +470,7 @@ DSurface * DSurface::Create_Primary(DSurface ** backsurface1)
 				shift <<= 1;
 			}
 
-			shift = PixelFormat.dwBBitMask;
+			shift = PixelFormat.u4.dwBBitMask;
 			BlueRight = 0;
 			BlueLeft = 0;
 			for (index = 0; index < 16; index++) {
@@ -529,7 +529,7 @@ DSurface::DSurface(LPDIRECTDRAWSURFACE surfaceptr) :
 		Description->dwSize = sizeof(DDSURFACEDESC);
 		HRESULT result = SurfacePtr->GetSurfaceDesc(Description);
 		if (result == DD_OK) {
-			BytesPerPixel = (Description->ddpfPixelFormat.dwRGBBitCount+7)/8;
+			BytesPerPixel = (Description->ddpfPixelFormat.u1.dwRGBBitCount+7)/8;
 //			Window.Set(Rect(0, 0, Description->dwWidth, Description->dwHeight));
 			Width = Description->dwWidth;
 			Height = Description->dwHeight;
@@ -577,7 +577,7 @@ int DSurface::Bytes_Per_Pixel(void) const
  *=============================================================================================*/
 int DSurface::Stride(void) const
 {
-	return(Description->lPitch);
+	return(Description->u1.lPitch);
 }
 
 
@@ -612,7 +612,7 @@ void * DSurface::Lock(Point2D point) const
 		HRESULT result = SurfacePtr->Lock(NULL, &desc, DDLOCK_SURFACEMEMORYPTR|DDLOCK_WAIT, NULL);
    	if (result != DD_OK) return(NULL);
 		memcpy(Description, &desc, sizeof(DDSURFACEDESC));
-		BytesPerPixel = (Description->ddpfPixelFormat.dwRGBBitCount+7)/8;
+		BytesPerPixel = (Description->ddpfPixelFormat.u1.dwRGBBitCount+7)/8;
 		LockPtr = Description->lpSurface;
 	}
 	XSurface::Lock();
@@ -866,7 +866,7 @@ bool DSurface::Fill_Rect(Rect const & cliprect, Rect const & fillrect, int color
 	DDBLTFX fx;
 	memset(&fx, '\0', sizeof(fx));
 	fx.dwSize = sizeof(fx);
-	fx.dwFillColor = color;
+	fx.u5.dwFillColor = color;
 	HRESULT result = SurfacePtr->Blt(&rect, NULL, NULL, DDBLT_WAIT|DDBLT_COLORFILL, &fx);
 	return(result == DD_OK);
 }

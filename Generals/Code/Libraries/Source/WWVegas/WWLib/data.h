@@ -50,7 +50,8 @@
 int Load_Picture(FileClass &file, Buffer & scratchbuf, Buffer & destbuf, unsigned char * palette, PicturePlaneType format);
 void * Load_Alloc_Data(FileClass & file);
 long Load_Uncompress(FileClass & file, Buffer & uncomp_buff, Buffer & dest_buff, void * reserved_data);
-char const * Fetch_String(int id);
-void const * Fetch_Resource(LPCSTR resname, LPCSTR restype);
+
+TCHAR *Fetch_String(int id);
+void const * Fetch_Resource(LPCWSTR resname, LPCWSTR restype);
 
 #endif

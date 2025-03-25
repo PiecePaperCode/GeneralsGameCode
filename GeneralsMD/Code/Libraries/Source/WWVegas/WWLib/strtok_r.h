@@ -41,11 +41,14 @@
 #pragma once
 #endif
 
-#ifndef __STRTOK_R_H__
-#define __STRTOK_R_H__
+#ifndef _STRTOK_R_H
+#define _STRTOK_R_H
 
-#ifndef _UNIX
-char *strtok_r(char *strptr, const char *delimiters, char **lasts);
+// Check if strtok_r is not already defined
+#ifndef strtok_r
+extern "C" {
+    char *strtok_r(char *strptr, const char *delimiters, char **lasts);
+}
 #endif
 
 #endif

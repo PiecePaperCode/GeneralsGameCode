@@ -37,10 +37,10 @@
 #ifndef DSURFACE_H
 #define DSURFACE_H
 
-#include	"palette.h"
-#include	"win.h"
+#include	"PALETTE.H"
 #include	"xsurface.h"
-#include	<ddraw.h>
+__declspec(uuid("12345678-1234-1234-1234-123456789abc"))
+#include	"ddraw.h"
 
 /*
 **	This is a concrete surface class that is based on the DirectDraw
@@ -148,7 +148,7 @@ class DSurface : public XSurface
 		*/
 		LPDIRECTDRAWSURFACE SurfacePtr;
 		DDSURFACEDESC * Description;
-		
+
 		/*
 		**	Pointer to the clipper object that is attached to the primary
 		**	surface.
@@ -161,7 +161,7 @@ class DSurface : public XSurface
 		static DDPIXELFORMAT PixelFormat;
 
 		/*
-		**	Shift values to extract the gun value from a hicolor pixel such that the 
+		**	Shift values to extract the gun value from a hicolor pixel such that the
 		**	gun component is normalized to a byte value.
 		*/
 		static int RedRight;

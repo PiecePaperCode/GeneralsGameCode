@@ -75,7 +75,7 @@ if(GENZH_BUILD_ZEROHOUR)
 endif()
 
 if(GENZH_BUILD_GENERALS)
-    add_subdirectory(Generals)
+    #add_subdirectory(Generals)
 endif()
 
 feature_summary(WHAT ENABLED_FEATURES DESCRIPTION "Enabled features:")

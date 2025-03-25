@@ -87,7 +87,7 @@ public:
 	bool operator!= (const TCHAR *rvalue) const;
 
 	inline const StringClass &operator= (const StringClass &string);
-	inline const StringClass &operator= (const TCHAR *string);
+	//inline const StringClass &operator= (const TCHAR *string);
 	inline const StringClass &operator= (TCHAR ch);
 
 	const StringClass &operator+= (const StringClass &string);

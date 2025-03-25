@@ -19,12 +19,14 @@
 #define _WIN32_WINNT 0x0400
 
 #include "thread.h"
-#include "except.h"
+#include "Except.h"
 #include "wwdebug.h"
 #include <process.h>
 #include <windows.h>
 #pragma warning ( push )
 #pragma warning ( disable : 4201 )
+#include <cstdio>
+
 #include "systimer.h"
 #pragma warning ( pop )
 
@@ -53,12 +55,18 @@ void __cdecl ThreadClass::Internal_Thread_Function(void* params)
 	tc->ThreadID = GetCurrentThreadId();
 
 #ifdef _WIN32
-	Register_Thread_ID(tc->ThreadID, tc->ThreadName);
+    Register_Thread_ID(tc->ThreadID, tc->ThreadName);
 
 	if (tc->ExceptionHandler != NULL) {
-		__try {
+		try {
 			tc->Thread_Function();
-		} __except(tc->ExceptionHandler(GetExceptionCode(), GetExceptionInformation())) {};
+		} catch (const std::exception& e) {
+		    // Handle standard C++ exceptions
+		    const int error_code = 1;
+		    printf("%s\n", e.what());
+		    exit(error_code);
+		    //tc->ExceptionHandler(error_code, e.what());
+		}
 	} else {
 		tc->Thread_Function();
 	}

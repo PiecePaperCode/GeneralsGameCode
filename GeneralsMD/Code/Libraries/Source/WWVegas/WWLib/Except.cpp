@@ -53,9 +53,9 @@
 #include <windows.h>
 #include	"assert.h"
 #include "cpudetect.h"
-#include	"except.h"
+#include	"Except.h"
 //#include "debug.h"
-#include "mpu.h"
+#include "MPU.H"
 //#include "commando\nat.h"
 #include "thread.h"
 #include "wwdebug.h"
@@ -362,7 +362,7 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 		do {
 			function_name = ImagehelpFunctionNames[count];
 			if (function_name) {
-				*fptr = (unsigned long) GetProcAddress(imagehelp, function_name);
+			    *fptr = reinterpret_cast<uintptr_t>(GetProcAddress(imagehelp, function_name));
 				fptr++;
 				count++;
 			}
@@ -434,7 +434,8 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 	/*
 	** Match the exception type with the error string and print it out
 	*/
-	for (int i=0 ; _codes[i] != 0xffffffff ; i++) {
+    int i = 0;
+	for (; _codes[i] != 0xffffffff ; i++) {
 		if (_codes[i] == e_info->ExceptionRecord->ExceptionCode) {
 			DebugString("Exception Handler: Found exception description\n");
 			break;
@@ -628,13 +629,16 @@ void Dump_Exception_Info(EXCEPTION_POINTERS *e_info)
 		/*
 		** Convert FP dump from temporary real value (10 bytes) to double (8 bytes).
 		*/
-		_asm {
-			push	eax
-			mov	eax,fp_data_ptr
-			fld   tbyte ptr [eax]
-			fstp	qword ptr [fp_value]
-			pop	eax
-		}
+	    asm volatile (
+            "push %%eax;"                    // Save eax
+            "mov %%eax, %[fp_data_ptr];"     // Move fp_data_ptr to eax
+            "fldt %[fp_data_ptr];"           // Load 80-bit float from memory into FPU stack
+            "fstp %[fp_value];"              // Store the top of the FPU stack into fp_value as a 64-bit float
+            "pop %%eax;"                     // Restore eax
+            :                               // No output registers
+            : [fp_data_ptr] "m" (fp_data_ptr), [fp_value] "m" (fp_value) // Input operands
+            : "%eax"                         // Clobbered registers
+        );
 		sprintf(scrap, "   %+#.17e\r\n", fp_value);
 		Add_Txt(scrap);
 	}
@@ -1230,13 +1234,14 @@ int Stack_Walk(unsigned long *return_addresses, int num_addresses, CONTEXT *cont
 
 	unsigned long reg_eip, reg_ebp, reg_esp;
 
-	__asm {
-here:
-		lea	eax,here
-		mov	reg_eip,eax
-		mov	reg_ebp,ebp
-		mov	reg_esp,esp
-	}
+    asm volatile (
+        "lea %0, here;"    // Load address of 'here' into reg_eip
+        "mov %1, %%ebp;"   // Move ebp to reg_ebp
+        "mov %2, %%esp;"   // Move esp to reg_esp
+        : "=r" (reg_eip), "=r" (reg_ebp), "=r" (reg_esp)  // Outputs
+        :                         // No inputs
+        : "%eax", "%ebp", "%esp"  // Clobbered registers
+    );
 
 	stack_frame.AddrPC.Mode = AddrModeFlat;
 	stack_frame.AddrPC.Offset = reg_eip;

@@ -237,8 +237,7 @@ StringClass::Free_String (void)
 //	Format
 //
 ///////////////////////////////////////////////////////////////////
-int _cdecl
-StringClass::Format_Args (const TCHAR *format, const va_list & arg_list )
+int StringClass::Format_Args (const TCHAR *format, const va_list & arg_list )
 {
 	//
 	// Make a guess at the maximum length of the resulting string
@@ -269,8 +268,7 @@ StringClass::Format_Args (const TCHAR *format, const va_list & arg_list )
 //	Format
 //
 ///////////////////////////////////////////////////////////////////
-int _cdecl
-StringClass::Format (const TCHAR *format, ...)
+int StringClass::Format (const TCHAR *format, ...)
 {
 	va_list arg_list;
 	va_start (arg_list, format);

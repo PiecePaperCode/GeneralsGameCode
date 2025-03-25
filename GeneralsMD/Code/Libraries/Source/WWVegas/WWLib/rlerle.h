@@ -455,7 +455,8 @@ class RLEBlitTransLucent75 : public RLEBlitter {
 
 
 #if defined(_MSC_VER)
-void RLEBlitTransZRemapXlat<unsigned short>::Blit(void * dest, void const * source, int len, int leadskip) const
+template<>
+inline void RLEBlitTransZRemapXlat<unsigned short>::Blit(void * dest, void const * source, int len, int leadskip) const
 {
 	unsigned char const * remapper = *RemapTable;
 	unsigned short const * transtable = TranslateTable;

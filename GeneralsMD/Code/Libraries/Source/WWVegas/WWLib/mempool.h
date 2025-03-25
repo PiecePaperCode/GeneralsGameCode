@@ -158,6 +158,7 @@ private:
 ** the class.
 */
 #define DEFINE_AUTO_POOL(T,BLOCKSIZE) \
+template<> \
 ObjectPoolClass<T,BLOCKSIZE> AutoPoolClass<T,BLOCKSIZE>::Allocator;
 
 

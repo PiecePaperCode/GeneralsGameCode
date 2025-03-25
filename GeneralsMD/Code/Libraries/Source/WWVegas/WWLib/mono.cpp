@@ -61,8 +61,8 @@
 
 #include	"always.h"
 #include	"data.h"
-#include	"mono.h"
-#include	"monodrvr.h"
+#include	"MONO.H"
+#include	"MONODRVR.H"
 #include	<stdio.h>
 
 
@@ -530,7 +530,7 @@ void MonoClass::Text_Print(char const *text, int x, int y, MonoAttribute attrib)
  *=============================================================================================*/
 void MonoClass::Text_Print(int text, int x, int y, MonoAttribute attrib)
 {
-	Text_Print(Fetch_String(text), x, y, attrib);
+	Text_Print(reinterpret_cast<char const *>(Fetch_String(text)), x, y, attrib);
 }
 
 
@@ -550,7 +550,7 @@ void MonoClass::Text_Print(int text, int x, int y, MonoAttribute attrib)
  *=============================================================================================*/
 void MonoClass::Print(int text)
 {
-	Print(Fetch_String(text));
+	Print(reinterpret_cast<char const *>(Fetch_String(text)));
 }
 
 

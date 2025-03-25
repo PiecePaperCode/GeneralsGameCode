@@ -129,43 +129,33 @@ public:
 	public:
 		__forceinline LockClass(FastCriticalSectionClass& critical_section) : cs(critical_section)
 		{
-		  unsigned& nFlag=cs.Flag;
+		    unsigned nFlag=cs.Flag;
 
-		  #define ts_lock _emit 0xF0
-		  assert(((unsigned)&nFlag % 4) == 0);
+		    assert(((unsigned)&nFlag % 4) == 0);
 
-      // I'm terribly sorry for these emits in here but
-      // VC won't inline any functions that have labels in them...
-
-      // Had to remove the emits back to normal
-      // ASM statements because sometimes the jump
-      // would be 1 byte off....
-      
-		  __asm mov ebx, [nFlag]
-		  __asm ts_lock
-		  __asm bts dword ptr [ebx], 0
-		  __asm jnc BitSet
-      //__asm _emit 0x73
-      //__asm _emit 0x0f
-
-		  The_Bit_Was_Previously_Set_So_Try_Again:
-		    ThreadClass::Switch_Thread();
-		  __asm mov ebx, [nFlag]
-		  __asm ts_lock
-		  __asm bts dword ptr [ebx], 0
-		  __asm jc  The_Bit_Was_Previously_Set_So_Try_Again
-      //_asm _emit 0x72
-      //_asm _emit 0xf1
-
-      BitSet:
-        ;
+		    __asm__ __volatile__(
+                "movl %0, %%ebx;"            // Load nFlag into ebx
+                "lock;"                      // Prefix for atomic operations
+                "btsl $0, (%%ebx);"          // Set bit 0 in nFlag
+                "jnc 1f;"                    // Jump to BitSet if the bit is not set
+                "2:;"                        // Label for retry
+                "call Switch_Thread;"        // Equivalent to ThreadClass::Switch_Thread()
+                "movl %0, %%ebx;"            // Reload nFlag into ebx
+                "lock;"                      // Prefix for atomic operations
+                "btsl $0, (%%ebx);"          // Set bit 0 in nFlag
+                "jc 2b;"                     // Jump back to retry if bit is set
+                "1:;"
+                :                            // No output operands
+                : "m" (nFlag)               // Input operand: nFlag
+                : "ebx", "memory"           // Clobbered registers: ebx, memory
+            );
 		}
 
 		~LockClass()
 		{
       cs.Flag=0;
 		}
-    
+
 	private:
 		LockClass &operator=(const LockClass&);
     LockClass(const LockClass&);

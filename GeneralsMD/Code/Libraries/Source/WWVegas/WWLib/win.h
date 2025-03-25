@@ -73,6 +73,10 @@
 extern HINSTANCE	ProgramInstance;
 extern HWND			MainWindow;
 extern bool GameInFocus;
+#elif defined(__MINGW32__)
+extern HINSTANCE ProgramInstance;
+extern HWND MainWindow;
+extern bool GameInFocus;
 
 #ifdef _DEBUG
 

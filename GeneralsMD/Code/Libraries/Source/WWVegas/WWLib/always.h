@@ -74,6 +74,7 @@
 #if 1 // (gth) killing the Generals Memory Manager!
 
 #ifndef _OPERATOR_NEW_DEFINED_
+#if !defined(__GLIBCXX__)
 
 	#define _OPERATOR_NEW_DEFINED_
 
@@ -83,18 +84,20 @@
 	extern void * __cdecl operator new[]	(size_t size);
 	extern void __cdecl operator delete[]	(void *p);
 
-	// additional overloads to account for VC/MFC funky versions
+// additional overloads to account for VC/MFC funky versions
 	extern void* __cdecl operator new			(size_t nSize, const char *, int);
+
 	extern void __cdecl operator delete		(void *, const char *, int);
 
 	extern void* __cdecl operator new[]		(size_t nSize, const char *, int);
 	extern void __cdecl operator delete[]	(void *, const char *, int);
 
-	// additional overloads for 'placement new'
-	//inline void* __cdecl operator new							(size_t s, void *p) { return p; }
-	//inline void __cdecl operator delete						(void *, void *p)		{ }
-	inline void* __cdecl operator new[]						(size_t s, void *p) { return p; }
+// additional overloads for 'placement new'
+//inline void* __cdecl operator new							(size_t s, void *p) { return p; }
+//inline void __cdecl operator delete						(void *, void *p)		{ }
+    inline void* __cdecl operator new[](size_t s, void *p) { return p; }
 	inline void __cdecl operator delete[]					(void *, void *p)		{ }
+#endif
 
 #endif
 
@@ -184,7 +187,7 @@ public:
 ** I'm relpacing all occurances of 'min' and 'max with 'MIN' and 'MAX'.  For code which
 ** is out of our domain (e.g. Max sdk) I'm declaring template functions for 'min' and 'max'
 */
-#define NOMINMAX
+//#define NOMINMAX
 
 #ifndef MAX
 #define MAX(a,b)            (((a) > (b)) ? (a) : (b))

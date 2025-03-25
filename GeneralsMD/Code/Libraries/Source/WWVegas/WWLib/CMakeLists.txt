@@ -73,7 +73,7 @@ set(WWLIB_SRC
     verchk.cpp
     widestring.cpp
     win.cpp
-    WWCOMUtil.cpp
+    #WWCOMUtil.cpp
     wwfile.cpp
     wwfont.cpp
     wwstring.cpp
@@ -187,7 +187,7 @@ set(WWLIB_SRC
     WATCOM.H
     widestring.h
     win.h
-    WWCOMUtil.h
+    #WWCOMUtil.h
     WWFILE.H
     wwstring.h
     xmouse.h

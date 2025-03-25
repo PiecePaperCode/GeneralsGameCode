@@ -197,7 +197,7 @@ typedef struct SRecord {
  * HISTORY:                                                                                    *
  *   12/25/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-char const * Fetch_String(int id)
+TCHAR *Fetch_String(int id)
 {
 #ifdef _UNIX
 	return("");
@@ -257,7 +257,7 @@ char const * Fetch_String(int id)
 }
 
 
-void const * Fetch_Resource(LPCSTR resname, LPCSTR restype)
+void const * Fetch_Resource(LPCWSTR resname, LPCWSTR restype)
 {
 #ifdef _UNIX
 	return(NULL);

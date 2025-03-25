@@ -60,7 +60,7 @@
 *
 ****************************************************************************/
 
-#include "targa.h"
+#include "TARGA.H"
 #ifndef TGA_USES_WWLIB_FILE_CLASSES
 #include <stdio.h>
 #endif
@@ -68,7 +68,7 @@
 #include <memory.h>
 #include <string.h>
 #ifdef TGA_USES_WWLIB_FILE_CLASSES
-#include "wwfile.h"
+#include "WWFILE.H"
 #include "ffactory.h"
 #else
 #include <io.h>
@@ -827,44 +827,50 @@ void Targa::XFlip(void)
 
 static __forceinline void _swapBytes(char *p1, char *p2, unsigned count)
 {
-  _asm
-  {
-    mov esi,[p1]
-    mov edi,[p2]
-    mov ebx,[count]
-    mov ecx,ebx
-    shr ecx,4
-    jz  lessThan16
-  lp:
-    mov eax,dword ptr [esi]
-    mov edx,dword ptr [esi+4]
-    xchg eax,dword ptr [edi]
-    xchg edx,dword ptr [edi+4]
-    mov dword ptr [esi],eax
-    mov dword ptr [esi+4],edx
-    mov eax,dword ptr [esi+8]
-    mov edx,dword ptr [esi+12]
-    xchg eax,dword ptr [edi+8]
-    xchg edx,dword ptr [edi+12]
-    mov dword ptr [esi+8],eax
-    mov dword ptr [esi+12],edx
-    add esi,16
-    add edi,16
-    dec ecx
-    jnz lp
-  lessThan16:
-    and ebx,15
-  lpLessThan16:
-    jz done
-    mov al,byte ptr [esi]
-    xchg al,byte ptr [edi]
-    mov byte ptr [edi],al
-    inc esi
-    inc edi
-    dec ebx
-    jmp lpLessThan16
-  done:
-  }
+    __asm__ __volatile__ (
+        "mov %%edi, %0;"        // p1 -> edi (32-bit)
+        "mov %%esi, %1;"        // p2 -> esi (32-bit)
+        "mov %%edx, %2;"        // count -> edx (32-bit)
+        "mov %%ecx, %%edx;"
+        "shr $4, %%ecx;"        // ecx = count / 16 (32-bit)
+        "jz lessThan16;"        // If less than 16, jump to byte swap logic
+
+    "lp:;"
+        "mov (%%edi), %%eax;"   // Load 4 bytes from p1 into eax (32-bit)
+        "mov 4(%%edi), %%edx;"  // Load next 4 bytes from p1 into edx (32-bit)
+        "xchg %%eax, (%%esi);"  // Swap the 4 bytes with p2
+        "xchg %%edx, 4(%%esi);" // Swap the next 4 bytes with p2
+        "mov %%eax, (%%edi);"   // Store the swapped 4 bytes back to p1
+        "mov %%edx, 4(%%edi);"  // Store the next swapped 4 bytes back to p1
+
+        "mov 8(%%edi), %%eax;"  // Load next 4 bytes from p1
+        "mov 12(%%edi), %%edx;" // Load next 4 bytes from p1
+        "xchg %%eax, 8(%%esi);" // Swap the next 4 bytes with p2
+        "xchg %%edx, 12(%%esi);"// Swap the next 4 bytes with p2
+        "mov %%eax, 8(%%edi);"  // Store the swapped 4 bytes back to p1
+        "mov %%edx, 12(%%edi);" // Store the next swapped 4 bytes back to p1
+        "add $16, %%edi;"       // Move edi by 16 bytes (next chunk)
+        "add $16, %%esi;"       // Move esi by 16 bytes (next chunk)
+        "dec %%ecx;"            // Decrement chunk count
+        "jnz lp;"               // Repeat until all chunks are processed
+
+    "lessThan16:;"
+        "and $15, %%edx;"       // Mask out the number of remaining bytes
+    "lpLessThan16:;"
+        "jz done;"              // If no more bytes, jump to done
+        "movb (%%edi), %%al;"   // Load a byte from p1 into al
+        "xchg %%al, (%%esi);"   // Swap byte with p2
+        "movb %%al, (%%esi);"   // Store the swapped byte back to p2
+        "inc %%edi;"            // Move to next byte in p1
+        "inc %%esi;"            // Move to next byte in p2
+        "dec %%edx;"            // Decrement remaining count
+        "jmp lpLessThan16;"     // Repeat until all bytes are processed
+
+    "done:;"
+        : // Output operands
+        : "m" (p1), "m" (p2), "m" (count)  // Input operands
+        : "%eax", "%edx", "%ecx", "%edi", "%esi" // Clobbered registers
+    );
 }
 
 void Targa::YFlip(void)
