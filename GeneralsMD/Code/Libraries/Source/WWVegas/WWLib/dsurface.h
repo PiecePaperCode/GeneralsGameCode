@@ -38,9 +38,9 @@
 #define DSURFACE_H
 
 #include	"PALETTE.H"
+#include	"win.h"
 #include	"xsurface.h"
-__declspec(uuid("12345678-1234-1234-1234-123456789abc"))
-#include	"ddraw.h"
+#include	<ddraw.h>
 
 /*
 **	This is a concrete surface class that is based on the DirectDraw
