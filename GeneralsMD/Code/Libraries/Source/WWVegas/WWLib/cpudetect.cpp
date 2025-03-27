@@ -821,24 +821,26 @@ void CPUDetectClass::Init_CPUID_Instruction()
    // the command (huh?)
 
 #ifdef WIN32
-    __asm__(" mov $0, __cpuid_available");  // clear flag
-    __asm__(" push %ebx");
-    __asm__(" pushfd");
-    __asm__(" pop %eax");
-    __asm__(" mov %eax, %ebx");
-    __asm__(" xor 0x00200000, %eax");
-    __asm__(" push %eax");
-    __asm__(" popfd");
-    __asm__(" pushfd");
-    __asm__(" pop %eax");
-    __asm__(" xor %ebx, %eax");
-    __asm__(" je done");
-    __asm__(" mov $1, __cpuid_available");
-    goto done;  // just to shut the compiler up
-    done:
-      __asm__(" push %ebx");
-    __asm__(" popfd");
-    __asm__(" pop %ebx");
+    __asm
+    {
+        mov cpuid_available, 0	// clear flag
+        push ebx
+        pushfd
+        pop eax
+        mov ebx, eax
+        xor eax, 0x00200000
+        push eax
+        popfd
+        pushfd
+        pop eax
+        xor eax, ebx
+        je done
+        mov cpuid_available, 1
+     done:
+        push ebx
+        popfd
+        pop ebx
+     }
 #elif defined(_UNIX)
      __asm__(" mov $0, __cpuid_available");  // clear flag
      __asm__(" push %ebx");
@@ -939,17 +941,20 @@ bool CPUDetectClass::CPUID(
 	unsigned u_edx;
 
 #ifdef WIN32
-    __asm__("pusha");
-    __asm__("mov	__cpuid_type, %eax");
-    __asm__("xor	%ebx, %ebx");
-    __asm__("xor	%ecx, %ecx");
-    __asm__("xor	%edx, %edx");
-    __asm__("cpuid");
-    __asm__("mov	%eax, __u_eax");
-    __asm__("mov	%ebx, __u_ebx");
-    __asm__("mov	%ecx, __u_ecx");
-    __asm__("mov	%edx, __u_edx");
-    __asm__("popa");
+    __asm
+    {
+        pushal
+        mov	eax, [cpuid_type]
+        xor	ebx, ebx
+        xor	ecx, ecx
+        xor	edx, edx
+        cpuid
+        mov	[u_eax], eax
+        mov	[u_ebx], ebx
+        mov	[u_ecx], ecx
+        mov	[u_edx], edx
+        popal
+     }
 #elif defined(_UNIX)
    __asm__("pusha");
    __asm__("mov	__cpuid_type, %eax");

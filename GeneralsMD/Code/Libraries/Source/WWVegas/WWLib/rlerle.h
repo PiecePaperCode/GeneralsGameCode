@@ -473,44 +473,36 @@ inline void RLEBlitTransZRemapXlat<unsigned short>::Blit(void * dest, void const
 		xor	eax,eax
 	}
 
-	/*
-	**	Skip leading pixels by analyzing the RLE data until the entire
-	**	requested skip pixel count has been processed. This could result in
-	**	unprocessed transparent pixels if it ended up in the middle of
-	**	a transparent pixel run. This is handled in the next block.
-	*/
-moreskip:
-	__asm {
-		test	edx,edx
-		jle	nomoreskip
-		dec	edx
-		lodsb
-		test	al,al
-		jnz	moreskip
-		lodsb
-		sub	edx,eax
-		inc	edx
-		jmp	moreskip
-	}
-nomoreskip:
 
-	/*
-	**	Handle any left over transparent pixels that would be part of
-	**	a transparent pixel run that occurs at the end of the leading
-	**	pixel skip process.
-	*/
-	__asm {
-		neg	edx
-		sub	ecx,edx			// Account for any left over transparent pixels
-		lea	edi,[edi+edx*2]
-		mov	edx,[transtable]
-	}
 
-	/*
-	**	Output the pixel data to the destination.
-	*/
-moredata:
+    /*
+    **	Handle any left over transparent pixels that would be part of
+    **	a transparent pixel run that occurs at the end of the leading
+    **	pixel skip process.
+    */
+    __asm {
+    nomoreskip:
+        neg	edx
+        sub	ecx,edx			// Account for any left over transparent pixels
+        lea	edi,[edi+edx*2]
+        mov	edx,[transtable]
+
+    moreskip:
+        test	edx,edx
+        jle	nomoreskip
+        dec	edx
+        lodsb
+        test	al,al
+        jnz	moreskip
+        lodsb
+        sub	edx,eax
+        inc	edx
+        jmp	moreskip
+    }
+
+
 	__asm {
+	moredata:
 		xor	eax,eax
 		or	ecx,ecx
 		jle	fini
@@ -522,24 +514,21 @@ moredata:
 		dec	ecx
 		stosw
 		jmp	moredata
-	}
 
-	/*
-	**	A transparent pixel run just causes the destination pointer
-	**	and length count to be adjusted by the length of the run.
-	*/
-transparent:
-	__asm {
+
+	transparent:
 		lodsb
 		lea	edi,[edi+eax*2]
 		sub	ecx,eax
 		jmp	moredata
+
+	fini:
 	}
 
 fini:;
 }
 
-
+template<>
 void RLEBlitTransRemapXlat<unsigned short>::Blit(void * dest, void const * source, int len, int leadskip) const
 {
 	unsigned char const * remapper = RemapTable;
@@ -563,8 +552,14 @@ void RLEBlitTransRemapXlat<unsigned short>::Blit(void * dest, void const * sourc
 	**	unprocessed transparent pixels if it ended up in the middle of
 	**	a transparent pixel run. This is handled in the next block.
 	*/
-moreskip:
-	__asm {
+    __asm {
+    nomoreskip:
+        neg	edx
+        sub	ecx,edx			// Account for any left over transparent pixels
+        lea	edi,[edi+edx*2]
+        mov	edx,[transtable]
+
+    moreskip:
 		test	edx,edx
 		jle	nomoreskip
 		dec	edx
@@ -576,25 +571,21 @@ moreskip:
 		inc	edx
 		jmp	moreskip
 	}
-nomoreskip:
+
 
 	/*
 	**	Handle any left over transparent pixels that would be part of
 	**	a transparent pixel run that occurs at the end of the leading
 	**	pixel skip process.
 	*/
-	__asm {
-		neg	edx
-		sub	ecx,edx			// Account for any left over transparent pixels
-		lea	edi,[edi+edx*2]
-		mov	edx,[transtable]
-	}
+
 
 	/*
 	**	Output the pixel data to the destination.
 	*/
-moredata:
+
 	__asm {
+	    moredata:
 		xor	eax,eax
 		or	ecx,ecx
 		jle	fini
@@ -606,24 +597,20 @@ moredata:
 		dec	ecx
 		stosw
 		jmp	moredata
-	}
 
-	/*
-	**	A transparent pixel run just causes the destination pointer
-	**	and length count to be adjusted by the length of the run.
-	*/
-transparent:
-	__asm {
+	    transparent:
 		lodsb
 		lea	edi,[edi+eax*2]
 		sub	ecx,eax
 		jmp	moredata
+
+	    fini:
 	}
 
 fini:;
 }
 
-
+template<>
 void RLEBlitTransXlat<unsigned short>::Blit(void * dest, void const * source, int len, int leadskip) const
 {
 	unsigned short const * transtable = TranslateTable;
@@ -646,8 +633,9 @@ void RLEBlitTransXlat<unsigned short>::Blit(void * dest, void const * source, in
 	**	unprocessed transparent pixels if it ended up in the middle of
 	**	a transparent pixel run. This is handled in the next block.
 	*/
-moreskip:
+
 	__asm {
+	moreskip:
 		test	edx,edx
 		jle	nomoreskip
 		dec	edx
@@ -658,15 +646,8 @@ moreskip:
 		sub	edx,eax
 		inc	edx
 		jmp	moreskip
-	}
-nomoreskip:
 
-	/*
-	**	Handle any left over transparent pixels that would be part of
-	**	a transparent pixel run that occurs at the end of the leading
-	**	pixel skip process.
-	*/
-	__asm {
+	nomoreskip:
 		neg	edx
 		sub	ecx,edx			// Account for any left over transparent pixels
 		lea	edi,[edi+edx*2]
@@ -675,8 +656,9 @@ nomoreskip:
 	/*
 	**	Output the pixel data to the destination.
 	*/
-moredata:
+
 	__asm {
+	moredata:
 		xor	eax,eax
 		or	ecx,ecx
 		jle	fini
@@ -687,21 +669,16 @@ moredata:
 		dec	ecx
 		stosw
 		jmp	moredata
-	}
 
-	/*
-	**	A transparent pixel run just causes the destination pointer
-	**	and length count to be adjusted by the length of the run.
-	*/
-transparent:
-	__asm {
+
+	transparent:
 		lodsb
 		lea	edi,[edi+eax*2]
 		sub	ecx,eax
 		jmp	moredata
-	}
 
-fini:;
+	fini:
+	}
 }
 
 #endif

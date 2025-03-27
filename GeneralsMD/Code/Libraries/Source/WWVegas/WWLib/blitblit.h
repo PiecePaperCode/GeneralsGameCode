@@ -550,32 +550,36 @@ inline void BlitTransZRemapXlat<unsigned short>::BlitForward(void * dest, void c
 	unsigned short const * translator = TranslateTable;
 	unsigned char const * remapper = *RemapTable;
 
-    __asm__ (
-        "movl %[len], %%ecx\n"               // Move len into ecx
-        "movl %[dest], %%edi\n"              // Move dest address into edi
-        "subl $2, %%edi\n"                   // Subtract 2 from edi (to align to word)
-        "movl %[source], %%esi\n"            // Move source address into esi
-        "movl %[remapper], %%ebx\n"         // Move remapper address into ebx
-        "movl %[translator], %%edx\n"       // Move translator address into edx
-        "xorl %%eax, %%eax\n"                // Clear eax (set to 0)
+    __asm {
+        mov	ecx,[len]
+        mov	edi,[dest]
+        sub	edi,2
+        mov	esi,[source]
+        mov	ebx,[remapper]
+        mov	edx,[translator]
+        xor	eax,eax
+    }
 
-        "1:\n"                               // Label for the loop
-        "decl %%ecx\n"                       // Decrement ecx (counter)
-        "jz 2f\n"                            // Jump to over if ecx is zero
-        "addl $2, %%edi\n"                   // Add 2 to edi (move to next destination position)
-        "xorl %%eax, %%eax\n"                // Clear eax (set to 0)
-        "lodsb\n"                            // Load byte from source (esi) into al
-        "orl %%al, %%al\n"                   // Test if al is zero
-        "jz 1b\n"                            // Jump back to loop start if al is zero
-        "movb (%%ebx, %%eax, 1), %%al\n"     // First remap step (8 bit to 8 bit) from remapper
-        "movw (%%edx, %%eax, 2), %%dx\n"     // Second remap step (8 bit to 16 bit) from translator
-        "movw %%dx, (%%edi)\n"              // Store the result in dest (edi)
-        "jmp 1b\n"                           // Jump back to loop start
-        "2:\n"                               // Label for over
-        : // Output operands
-        : [len] "m" (len), [dest] "m" (dest), [source] "m" (source), [remapper] "m" (remapper), [translator] "m" (translator) // Input operands
-        : "ebx", "ecx", "edi", "esi", "eax", "edx", "al", "dx" // Clobbered registers
-    );
+    /*
+    **	This block is 11 cycles per pixel, if not transparent, and 5
+    **	cycles per pixel, if transparent.
+    */
+
+        __asm {
+        again:
+            dec	ecx
+            jz		over
+            add	edi,2
+            xor	eax,eax
+            lodsb
+            or		al,al
+            jz		again
+            mov	al,[ebx+eax]				// First remap step (8 bit to 8 bit).
+            mov	ax,[edx+eax*2]				// Second remap step (8 bit to 16 bit).
+            mov	[edi],ax
+            jmp	again
+            over:
+        }
 over:;
 }
 

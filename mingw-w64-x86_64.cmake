@@ -1,40 +1,53 @@
 set(CMAKE_SYSTEM_NAME Windows)
 
-# Set the MinGW-w64 prefix for 32-bit (i686) builds
+# Use Clang with MinGW-w64 as the compiler
 set(TOOLCHAIN_PREFIX x86_64-w64-mingw32)
+set(CMAKE_C_COMPILER clang)
+set(CMAKE_CXX_COMPILER clang++)
 
-# Cross compilers to use for C, C++, and RC (resource compiler)
-set(CMAKE_C_COMPILER ${TOOLCHAIN_PREFIX}-gcc)
-set(CMAKE_CXX_COMPILER ${TOOLCHAIN_PREFIX}-g++)
+# Ensure the compiler targets Windows (MinGW)
+set(CMAKE_C_COMPILER_TARGET ${TOOLCHAIN_PREFIX})
+set(CMAKE_CXX_COMPILER_TARGET ${TOOLCHAIN_PREFIX})
+
+# Use MinGW-w64 resource compiler
 set(CMAKE_RC_COMPILER ${TOOLCHAIN_PREFIX}-windres)
 
-# target environment on the build host system
-set(CMAKE_FIND_ROOT_PATH /usr/${TOOLCHAIN_PREFIX})
+# Set the correct include and library directories
+include_directories(/usr/${TOOLCHAIN_PREFIX}/include)
+link_directories(/usr/${TOOLCHAIN_PREFIX}/lib)
 
-# modify default behavior of FIND_XXX() commands
+# Use lld as the linker to avoid MSVC-style flags
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fuse-ld=lld")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fuse-ld=lld")
+
+# Force MinGW standard library
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")
+
+# Prevent CMake from using MSVC-specific linker flags
+set(CMAKE_EXE_LINKER_FLAGS "")
+set(CMAKE_SHARED_LINKER_FLAGS "")
+
+# CMake find settings
+set(CMAKE_FIND_ROOT_PATH /usr/${TOOLCHAIN_PREFIX})
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 
-# Compatibility settings for older MSVC versions
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_MSC_VER=1200")  # VC98 has _MSC_VER=1200
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_MSC_VER=1200 -fms-extensions -fpermissive -fpack-struct")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")  # Disable RTTI to match VC98
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")  # Disable exceptions (VC98 default)
-add_definitions(-D_WIN32 -D_USE_32BIT_TIME_T -D__MINGW32__ -D__CRT_UUID_DECLARATIONS__)
-add_definitions(-UUNICODE -U_UNICODE)
-
-# Enable MFC compatibility
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_USRDLL -D_MBCS")
-
-# Avoid using C++11 or later features since VC98 doesn't support them
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++98")
-
-# Ensure the compiler uses a 32-bit target
-set(CMAKE_SYSTEM_PROCESSOR x86)
+# Compatibility
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -m32")
-set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -m32")
-
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_MSC_VER=1200")
+add_compile_options(-D__WCHAR_TYPE__=short)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Xclang -fms-compatibility -fms-extensions")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fasm-blocks")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdeclspec -Wno-invalid-noreturn -Wno-microsoft -Wno-attributes")
+add_definitions(-D_aligned_malloc=aligned_malloc)
+add_compile_options(-D_aligned_malloc=aligned_alloc)
+add_compile_options(-Wno-non-pod-varargs -Wno-writable-strings)
+add_compile_options(-Wno-non-pod-varargs)
+add_compile_options(-Wno-writable-strings)
+add_compile_options(-fasm-blocks)
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+add_definitions(-DVC98_COMPATIBLE)
+set(CMAKE_CXX_STANDARD 98)
+set(CMAKE_CXX_STANDARD_REQUIRED OFF)
