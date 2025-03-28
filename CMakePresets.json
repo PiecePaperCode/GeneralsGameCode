@@ -63,6 +63,38 @@
                 "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/mingw-w64-x86_64.cmake",
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
                 "CMAKE_BUILD_TYPE": "Release"
+            },
+            "vendor": {
+                "jetbrains.com/clion": {
+                    "toolchain": "Visual Studio 6"
+                }
+            }
+        },
+        {
+            "name": "vc6prof",
+            "displayName": "Build Profiling Binaries with NMake",
+            "hidden": false,
+            "inherits": "vc6",
+            "cacheVariables": {
+                "GENZH_BUILD_PROFILE": "ON"
+            }
+        },
+        {
+            "name": "vc6int",
+            "displayName": "Build Internal Binaries with NMake",
+            "inherits": "vc6",
+            "cacheVariables": {
+                "GENZH_BUILD_INTERNAL": "ON"
+            }
+        },
+        {
+            "name": "vc6dbg",
+            "displayName": "Build Debug Binaries with NMake",
+            "hidden": false,
+            "inherits": "vc6",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "GENZH_BUILD_DEBUG": "ON"
             }
         },
         {
@@ -185,6 +217,27 @@
             "description": "Builds the project using MinGW-w64 for Windows (Release Mode)",
             "configurePreset": "mingw64",
             "jobs": 8
+        },
+        {
+            "name": "win32int",
+            "configurePreset": "win32int",
+            "displayName": "Build Windows Internal build",
+            "description": "Build Windows Internal build",
+            "configuration": "Release"
+        },
+        {
+            "name": "win32prof",
+            "configurePreset": "win32prof",
+            "displayName": "Build Windows Profiling build",
+            "description": "Build Windows Profiling build",
+            "configuration": "Release"
+        },
+        {
+            "name": "win32dbg",
+            "configurePreset": "win32dbg",
+            "displayName": "Build Windows Debug build",
+            "description": "Build Windows Debug build",
+            "configuration": "Debug"
         },
         {
             "name": "unix",
