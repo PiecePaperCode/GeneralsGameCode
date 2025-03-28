@@ -51,6 +51,7 @@ float _FastInvSinTable[SIN_TABLE_SIZE];
 void		WWMath::Init(void)
 {
 	LookupTableMgrClass::Init();
+    int a = 0;
 
 	for (int a=0;a<ARC_TABLE_SIZE;++a) {
 		float cv=float(a-ARC_TABLE_SIZE/2)*(1.0f/(ARC_TABLE_SIZE/2));

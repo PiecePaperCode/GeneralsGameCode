@@ -602,7 +602,7 @@ WWINLINE int WWMath::Float_To_Int_Floor (const float& f)
 // ----------------------------------------------------------------------------
 
 #if defined(_MSC_VER) && defined(_M_IX86)
-WWINLINE __declspec(naked) float __fastcall WWMath::Inv_Sqrt(float a)
+WWINLINE float __fastcall WWMath::Inv_Sqrt(float a)
 {
 	__asm {
 		mov		eax, 0be6eb508h
